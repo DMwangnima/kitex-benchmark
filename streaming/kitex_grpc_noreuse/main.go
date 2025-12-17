@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 CloudWeGo Authors
+ * Copyright 2025 CloudWeGo Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ import (
 	"github.com/cloudwego/kitex-benchmark/runner"
 )
 
-const port = 8001
+const port = 8007
 
 var (
 	_ echo.SEcho = &EchoImpl{}
 
-	recorder = perf.NewRecorder("KITEX_GRPC@Server")
+	recorder = perf.NewRecorder("KITEX_GRPC_NOREUSE@Server")
 )
 
 // EchoImpl implements the last service interface defined in the IDL.

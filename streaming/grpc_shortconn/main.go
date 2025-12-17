@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 CloudWeGo Authors
+ * Copyright 2025 CloudWeGo Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,54 +17,50 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
 	"net"
 
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/metadata"
-	"github.com/cloudwego/kitex/server"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
-	"github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo"
-	sechosvr "github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo/secho"
+	grpcg "github.com/cloudwego/kitex-benchmark/codec/protobuf/grpc_gen"
 	"github.com/cloudwego/kitex-benchmark/perf"
 	"github.com/cloudwego/kitex-benchmark/runner"
 )
 
-const port = 8001
-
-var (
-	_ echo.SEcho = &EchoImpl{}
-
-	recorder = perf.NewRecorder("KITEX_GRPC@Server")
+const (
+	port = 8008
 )
 
-// EchoImpl implements the last service interface defined in the IDL.
-type EchoImpl struct{}
+var recorder = perf.NewRecorder("GRPC_SHORTCONN@Server")
 
-// Echo implements the EchoImpl interface.
-func (s *EchoImpl) Echo(ctx context.Context, stream echo.SEcho_EchoServer) error {
-	md, _ := metadata.FromIncomingContext(ctx)
+type server struct {
+	grpcg.UnimplementedSEchoServer
+}
+
+func (s *server) Echo(stream grpcg.SEcho_EchoServer) error {
+	md, _ := metadata.FromIncomingContext(stream.Context())
 	if md == nil || len(md["header"]) == 0 || md["header"][0] != "hello" {
 		return fmt.Errorf("invalid header: %v", md)
 	}
 
 	for {
-		req, err := stream.Recv(ctx)
-		if err == io.EOF {
-			return nil
-		}
+		req, err := stream.Recv()
 		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
 			return err
 		}
 		action, msg := runner.ProcessRequest(recorder, req.Action, req.Msg)
-
-		err = stream.Send(ctx, &echo.Response{
+		err = stream.Send(&grpcg.Response{
 			Action: action,
 			Msg:    msg,
 		})
 		if err != nil {
+			log.Printf("stream send failed: %v\n", err)
 			return err
 		}
 	}
@@ -75,12 +71,16 @@ func main() {
 	go func() {
 		perf.ServeMonitor(fmt.Sprintf(":%d", port+10000))
 	}()
-	svr := sechosvr.NewServer(
-		new(EchoImpl),
-		server.WithServiceAddr(&net.TCPAddr{IP: net.IPv4zero, Port: port}),
-	)
 
-	if err := svr.Run(); err != nil {
-		log.Println(err.Error())
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	grpcg.RegisterSEchoServer(s, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

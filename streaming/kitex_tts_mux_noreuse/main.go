@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 CloudWeGo Authors
+ * Copyright 2025 CloudWeGo Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,31 +23,29 @@ import (
 	"log"
 	"net"
 
-	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/metadata"
+	"github.com/bytedance/gopkg/cloud/metainfo"
+	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/server"
 
-	"github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo"
-	sechosvr "github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo/secho"
+	"github.com/cloudwego/kitex-benchmark/codec/thrift/kitex_gen/echo"
+	"github.com/cloudwego/kitex-benchmark/codec/thrift/kitex_gen/echo/streamserver"
 	"github.com/cloudwego/kitex-benchmark/perf"
 	"github.com/cloudwego/kitex-benchmark/runner"
 )
 
-const port = 8001
+const port = 8005
 
 var (
-	_ echo.SEcho = &EchoImpl{}
-
-	recorder = perf.NewRecorder("KITEX_GRPC@Server")
+	_        echo.StreamServer = &StreamServerImpl{}
+	recorder                   = perf.NewRecorder("KITEX_TTS_MUX_NOREUSE@Server")
 )
 
-// EchoImpl implements the last service interface defined in the IDL.
-type EchoImpl struct{}
+type StreamServerImpl struct{}
 
-// Echo implements the EchoImpl interface.
-func (s *EchoImpl) Echo(ctx context.Context, stream echo.SEcho_EchoServer) error {
-	md, _ := metadata.FromIncomingContext(ctx)
-	if md == nil || len(md["header"]) == 0 || md["header"][0] != "hello" {
-		return fmt.Errorf("invalid header: %v", md)
+func (si *StreamServerImpl) Echo(ctx context.Context, stream echo.StreamServer_EchoServer) error {
+	v, _ := metainfo.GetValue(ctx, "header")
+	if v != "hello" {
+		return fmt.Errorf("invalid header: %v", v)
 	}
 
 	for {
@@ -60,10 +58,10 @@ func (s *EchoImpl) Echo(ctx context.Context, stream echo.SEcho_EchoServer) error
 		}
 		action, msg := runner.ProcessRequest(recorder, req.Action, req.Msg)
 
-		err = stream.Send(ctx, &echo.Response{
-			Action: action,
-			Msg:    msg,
-		})
+		resp := new(echo.Response)
+		resp.Action = action
+		resp.Msg = msg
+		err = stream.Send(ctx, resp)
 		if err != nil {
 			return err
 		}
@@ -71,15 +69,16 @@ func (s *EchoImpl) Echo(ctx context.Context, stream echo.SEcho_EchoServer) error
 }
 
 func main() {
+	klog.SetLevel(klog.LevelWarn)
 	// start pprof server
 	go func() {
 		perf.ServeMonitor(fmt.Sprintf(":%d", port+10000))
 	}()
-	svr := sechosvr.NewServer(
-		new(EchoImpl),
+
+	svr := streamserver.NewServer(
+		new(StreamServerImpl),
 		server.WithServiceAddr(&net.TCPAddr{IP: net.IPv4zero, Port: port}),
 	)
-
 	if err := svr.Run(); err != nil {
 		log.Println(err.Error())
 	}
