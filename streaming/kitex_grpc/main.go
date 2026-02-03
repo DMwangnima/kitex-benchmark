@@ -74,6 +74,7 @@ func main() {
 	svr := sechosvr.NewServer(
 		new(EchoImpl),
 		server.WithServiceAddr(&net.TCPAddr{IP: net.IPv4zero, Port: port}),
+		server.WithGRPCWriteBufferSize(16*1024),
 	)
 
 	if err := svr.Run(); err != nil {

@@ -38,6 +38,7 @@ func NewKClient(opt *runner.Options) runner.Client {
 		client.WithHostPorts(opt.Address),
 		client.WithTransportProtocol(transport.GRPC),
 		client.WithGRPCConnPoolSize(1),
+		client.WithGRPCWriteBufferSize(16*1024),
 	)
 	cli := &kClient{
 		client: c,
