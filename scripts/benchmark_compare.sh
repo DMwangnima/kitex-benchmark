@@ -34,12 +34,14 @@ function log_prefix() {
 function prepare_old() {
     git checkout go.mod go.sum
     go get -v github.com/cloudwego/kitex@$old
+    go get -v github.com/cloudwego/gopkg@v0.1.9-0.20260125140656-37e13978d5f2
     go mod tidy
 }
 
 function prepare_new() {
     git checkout go.mod go.sum
-    go get -v github.com/cloudwego/kitex@$new
+    git checkout feat/grpc_write_buffer_sharing
+    go get -v github.com/cloudwego/gopkg@v0.1.9-0.20260125140656-37e13978d5f2
     go mod tidy
 }
 
@@ -105,14 +107,14 @@ function compare() {
 report_dir=`date '+%m%d-%H%M'`
 
 scenarios=(
-  "thrift          $PROJECT_ROOT/scripts/build_thrift.sh     kitex            8001"
-  "thrift-mux      $PROJECT_ROOT/scripts/build_thrift.sh     kitex-mux        8002"
-  "protobuf        $PROJECT_ROOT/scripts/build_pb.sh         kitex            8001"
+#  "thrift          $PROJECT_ROOT/scripts/build_thrift.sh     kitex            8001"
+#  "thrift-mux      $PROJECT_ROOT/scripts/build_thrift.sh     kitex-mux        8002"
+#  "protobuf        $PROJECT_ROOT/scripts/build_pb.sh         kitex            8001"
   "grpc-unary      $PROJECT_ROOT/scripts/build_grpc.sh       kitex            8006"
   "grpc-bidi       $PROJECT_ROOT/scripts/build_streaming.sh  kitex_grpc       8001"
-  "ttstream-bidi   $PROJECT_ROOT/scripts/build_streaming.sh  kitex_tts_lconn  8002"
-  "generic-json    $PROJECT_ROOT/scripts/build_generic.sh    generic_json     8002"
-  "generic-map     $PROJECT_ROOT/scripts/build_generic.sh    generic_map      8003"
+#  "ttstream-bidi   $PROJECT_ROOT/scripts/build_streaming.sh  kitex_tts_lconn  8002"
+#  "generic-json    $PROJECT_ROOT/scripts/build_generic.sh    generic_json     8002"
+#  "generic-map     $PROJECT_ROOT/scripts/build_generic.sh    generic_map      8003"
   # "generic-binary  $PROJECT_ROOT/scripts/build_generic.sh    generic_binary   8004"
 )
 
