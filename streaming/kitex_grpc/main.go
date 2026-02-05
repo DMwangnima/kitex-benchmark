@@ -22,6 +22,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/metadata"
 	"github.com/cloudwego/kitex/server"
 
@@ -74,6 +75,7 @@ func main() {
 	svr := sechosvr.NewServer(
 		new(EchoImpl),
 		server.WithServiceAddr(&net.TCPAddr{IP: net.IPv4zero, Port: port}),
+		server.WithGRPCReuseWriteBuffer(grpc.ReuseWriteBufferConfig{Enable: true}),
 	)
 
 	if err := svr.Run(); err != nil {

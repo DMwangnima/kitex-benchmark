@@ -24,6 +24,7 @@ import (
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/metadata"
 	"github.com/cloudwego/kitex/transport"
 
@@ -38,6 +39,7 @@ func NewKClient(opt *runner.Options) runner.Client {
 		client.WithHostPorts(opt.Address),
 		client.WithTransportProtocol(transport.GRPC),
 		client.WithGRPCConnPoolSize(1),
+		client.WithGRPCReuseWriteBuffer(grpc.ReuseWriteBufferConfig{Enable: true}),
 	)
 	cli := &kClient{
 		client: c,

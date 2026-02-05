@@ -24,6 +24,7 @@ import (
 	"os"
 	"runtime/pprof"
 
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/server"
 
 	"github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo"
@@ -75,6 +76,7 @@ func main() {
 	svr := echosvr.NewServer(
 		new(EchoImpl),
 		server.WithServiceAddr(&net.TCPAddr{IP: net.IPv4zero, Port: port}),
+		server.WithGRPCReuseWriteBuffer(grpc.ReuseWriteBufferConfig{Enable: true}),
 	)
 
 	if err := svr.Run(); err != nil {

@@ -105,14 +105,14 @@ function compare() {
 report_dir=`date '+%m%d-%H%M'`
 
 scenarios=(
-  "thrift          $PROJECT_ROOT/scripts/build_thrift.sh     kitex            8001"
-  "thrift-mux      $PROJECT_ROOT/scripts/build_thrift.sh     kitex-mux        8002"
-  "protobuf        $PROJECT_ROOT/scripts/build_pb.sh         kitex            8001"
+#  "thrift          $PROJECT_ROOT/scripts/build_thrift.sh     kitex            8001"
+#  "thrift-mux      $PROJECT_ROOT/scripts/build_thrift.sh     kitex-mux        8002"
+#  "protobuf        $PROJECT_ROOT/scripts/build_pb.sh         kitex            8001"
   "grpc-unary      $PROJECT_ROOT/scripts/build_grpc.sh       kitex            8006"
   "grpc-bidi       $PROJECT_ROOT/scripts/build_streaming.sh  kitex_grpc       8001"
-  "ttstream-bidi   $PROJECT_ROOT/scripts/build_streaming.sh  kitex_tts_lconn  8002"
-  "generic-json    $PROJECT_ROOT/scripts/build_generic.sh    generic_json     8002"
-  "generic-map     $PROJECT_ROOT/scripts/build_generic.sh    generic_map      8003"
+#  "ttstream-bidi   $PROJECT_ROOT/scripts/build_streaming.sh  kitex_tts_lconn  8002"
+#  "generic-json    $PROJECT_ROOT/scripts/build_generic.sh    generic_json     8002"
+#  "generic-map     $PROJECT_ROOT/scripts/build_generic.sh    generic_map      8003"
   # "generic-binary  $PROJECT_ROOT/scripts/build_generic.sh    generic_binary   8004"
 )
 

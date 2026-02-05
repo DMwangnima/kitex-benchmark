@@ -22,6 +22,7 @@ import (
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/klog"
+	"github.com/cloudwego/kitex/pkg/remote/trans/nphttp2/grpc"
 	"github.com/cloudwego/kitex/transport"
 
 	"github.com/cloudwego/kitex-benchmark/codec/protobuf/kitex_gen/echo"
@@ -36,6 +37,7 @@ func NewKClient(opt *runner.Options) runner.Client {
 			client.WithHostPorts(opt.Address),
 			client.WithTransportProtocol(transport.GRPC),
 			client.WithGRPCConnPoolSize(6), // the cpu cores of server is 4, and 4*3/2 = 6
+			client.WithGRPCReuseWriteBuffer(grpc.ReuseWriteBufferConfig{Enable: true}),
 		),
 		reqPool: &sync.Pool{
 			New: func() interface{} {
